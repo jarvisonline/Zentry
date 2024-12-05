@@ -12,8 +12,32 @@ const Navbar = () => {
   const [isNavVisible, setisNavVisible] = useState(true);
   const navContainerRef = useRef(null);
   const audioElementRef = useRef(null);
+  const [hasInteracted, setHasInteracted] = useState(false);
 
   const { y: currentScrollY } = useWindowScroll();
+
+  useEffect(() => {
+    const handleFirstInteraction = () => {
+      if (!hasInteracted) {
+        setHasInteracted(true);
+        setIsAudioPlaying(true);
+        setisIndicatorActive(true);
+        audioElementRef.current.play();
+        // Remove event listeners after first interaction
+        window.removeEventListener('click', handleFirstInteraction);
+        window.removeEventListener('keydown', handleFirstInteraction);
+      }
+    };
+
+    window.addEventListener('click', handleFirstInteraction);
+    window.addEventListener('keydown', handleFirstInteraction);
+
+    return () => {
+      window.removeEventListener('click', handleFirstInteraction);
+      window.removeEventListener('keydown', handleFirstInteraction);
+    };
+  }, [hasInteracted]);
+
   useEffect(() => {
     if (currentScrollY === 0) {
       setisNavVisible(true);
@@ -27,6 +51,7 @@ const Navbar = () => {
     }
     setlastScrollY(currentScrollY);
   }, [currentScrollY]);
+
   const toggleAudioIndicator = () => {
     setIsAudioPlaying((prev) => !prev);
     setisIndicatorActive((prev) => !prev);
@@ -47,6 +72,7 @@ const Navbar = () => {
       audioElementRef.current.pause();
     }
   }, [isAudioPlaying]);
+
   return (
     <div
       ref={navContainerRef}
